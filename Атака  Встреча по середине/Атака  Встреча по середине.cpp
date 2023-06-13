@@ -385,7 +385,7 @@ int main()
 	if (S.encode(pt,round_text,key))
 	{
     S.generate_key(key,2);
-	cipher_text = S.encode(pt, round_text, key);		//КОДИРОВАНИЕ
+	cipher_text = S.encode(pt, round_text, key);		//КОДИРОВАНИЕ C = S-DES(S-DES(M, 𝐾1), 𝐾2)
 	}
 	
 	return 0;
