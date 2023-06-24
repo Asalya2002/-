@@ -1,14 +1,16 @@
 ﻿// Атака  Встреча по середине.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
 //
-#include<iostream>
+#include <iostream>
+
 using namespace std;
+// Реализация S-DES
 class SDES
 {
 private:
-int round1_key[8], round2_key[8];
+	int round1_key[8], round2_key[8];
 public:
-    void p10(int key[]);
-    void p8(int key[]);
+	void p10(int key[]);
+	void p8(int key[]);
 	void p4(int s0s1[]);
 	void left_shift(int left_half[], int right_half[], int shift_count);	// сдвиг влево на количество раз shift_count
 	int* generate_key(int key[], int round);
@@ -19,12 +21,13 @@ public:
 	int SBOX1(int row, int column);
 	int* rounds(int pt[], int key[], int round_no, int flag);
 	int* encode(int pt[], int* round_text, int key[]);
-	void decode(int pt[], int* cipher_text, int key[]);
+	int* decode(int pt[], int* cipher_text, int key[]);
+	int meetInTheMiddle(int* ciphertext, int* plaintext);
 };
 
 void SDES::p10(int key[])
 {
-    //Input:  1 2 3 4 5 6   7 8 9 10
+	//Input:  1 2 3 4 5 6   7 8 9 10
 	//Output: 3 5 2 7 4 10 1 9 8 6  
 	int out[10] = { 3, 5, 2, 7, 4, 10, 1, 9, 8, 6 };
 	int temp[10];
@@ -33,12 +36,12 @@ void SDES::p10(int key[])
 	for (int i = 0; i < 10; i++)
 	{
 		key[i] = temp[out[i] - 1];
-		
+
 	}
 }
 void SDES::p8(int key[])
 {
-    //Input:  1 2 3 4 5 6 7  8 9 10
+	//Input:  1 2 3 4 5 6 7  8 9 10
 	//Output: 6 3 7 4 8 5 10 9
 	int out[8] = { 6, 3, 7, 4, 8, 5, 10, 9 };
 	int temp[10];
@@ -48,7 +51,7 @@ void SDES::p8(int key[])
 	for (int i = 0; i < 8; i++)
 	{
 		key[i] = temp[out[i] - 1];
-		
+
 	}
 }
 void SDES::p4(int s0s1[])  //Прямой P-блок (P4)  2 4 3 1
@@ -70,7 +73,7 @@ void SDES::p4(int s0s1[])  //Прямой P-блок (P4)  2 4 3 1
 }
 void SDES::left_shift(int left_half[], int right_half[], int shift_count)
 {
-    int temp1 = left_half[0];
+	int temp1 = left_half[0];
 	int temp2 = right_half[0];
 
 	for (int i = 0; i < 4; i++)
@@ -86,7 +89,8 @@ void SDES::left_shift(int left_half[], int right_half[], int shift_count)
 }
 
 int* SDES::generate_key(int key[], int round)
-{int left_half[5], right_half[5];
+{
+	int left_half[5], right_half[5];
 	static int key1[10], key2[8];
 	p10(key);
 	for (int i = 0; i < 10; i++)
@@ -94,13 +98,13 @@ int* SDES::generate_key(int key[], int round)
 		if (i < 5)
 		{
 			left_half[i] = key[i];
-			
+
 		}
 		else
 		{
-		
+
 			right_half[i - 5] = key[i];
-			
+
 		}
 	}
 
@@ -143,7 +147,7 @@ void SDES::initial_permutation(int pt[])   // Начальная переста�
 	for (int i = 0; i < 8; i++)
 	{
 		pt[i] = temp[out[i] - 1];
-		
+
 	}
 }
 
@@ -165,8 +169,8 @@ void SDES::inverse_initial_permutation(int pt[])
 
 int* SDES::expand_and_permute(int right_half[])  //Перестановка с расширением E/P
 {
-     //Input:  1 2 3 4  
-	//Output: 4 1 2 3 2 3 4 1 
+	//Input:  1 2 3 4  
+   //Output: 4 1 2 3 2 3 4 1 
 	int out[8] = { 4,1,2,3,2,3,4,1 };
 	int temp[4];
 	static int expanded_right[8];
@@ -179,7 +183,7 @@ int* SDES::expand_and_permute(int right_half[])  //Перестановка с �
 		expanded_right[i] = temp[out[i] - 1];
 	}
 	return expanded_right;
-	
+
 }
 
 int SDES::SBOX0(int row, int column)
@@ -201,7 +205,7 @@ int SDES::SBOX1(int row, int column)
 			{10,01,00,11}
 	};
 	return s1[row][column];
-	}
+}
 
 
 int* SDES::rounds(int pt[], int key[], int round_no, int flag)
@@ -210,7 +214,7 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 	cout << "\nROUND-" << round_no;
 	for (int i = 0; i < 10; i++)
 	{
-		
+
 		temp_key[i] = key[i];		// резервное копирование исходного ключа по мере его дальнейшего изменения
 	}
 
@@ -220,7 +224,7 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 	{
 		left[i] = pt[i];
 		right[i] = pt[i + 4];
-		
+
 	}
 	expanded_right = expand_and_permute(right);
 
@@ -244,24 +248,24 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 			cout << key1[i];
 		}
 	}
-	else			
+	else
 	{
 
 		if (round_no == 1)			//если раунд1, используйте ключ2
 		{
-			
+
 			for (int i = 0; i < 8; i++)
 			{
 				key1[i] = round2_key[i];
-				
+
 			}
 		}
 		else				//если раунд2 использует ключ1
 		{
-			
+
 			for (int i = 0; i < 8; i++)
 			{
-				
+
 				key1[i] = round1_key[i];
 			}
 		}
@@ -272,7 +276,7 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 			cout << key1[i];
 		}
 	}
-	
+
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -287,10 +291,10 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 	int column = s0[2] + (s0[1] * 2);
 	static int s0s1[4];
 	int ss0 = SBOX0(row, column);
-	
+
 	row = s1[3] + (s1[0] * 2);
 	column = s1[2] + (s1[1] * 2);
-	
+
 	int ss1 = SBOX1(row, column);
 
 	s0s1[1] = ss0 % 10;
@@ -301,7 +305,7 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 	p4(s0s1);
 
 	static int new_plain_text[8];
-	
+
 	for (int i = 0; i < 4; i++)
 	{
 		s0s1[i] = s0s1[i] ^ left[i];
@@ -318,7 +322,7 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 		}
 	}
 
-	
+
 	cout << "\n\nRound " << round_no << " Output:\n";
 	for (int i = 0; i < 8; i++)
 		cout << new_plain_text[i] << "\t";
@@ -328,7 +332,7 @@ int* SDES::rounds(int pt[], int key[], int round_no, int flag)
 
 	if (round_no == 1)
 	{
-		
+
 		if (flag == 0)	//если кодировка
 			rounds(new_plain_text, temp_key, 2, 0);
 		else			//в противном случае декодирование
@@ -355,7 +359,7 @@ int* SDES::encode(int pt[], int* round_text, int key[])
 	return nullptr;
 }
 
-void SDES::decode(int pt[], int* cipher_text, int key[])
+int* SDES::decode(int pt[], int* cipher_text,int key[])
 {
 	int* new_ct = rounds(cipher_text, key, 1, 1);		//флаг=1 для декодирования
 	inverse_initial_permutation(new_ct);
@@ -363,32 +367,51 @@ void SDES::decode(int pt[], int* cipher_text, int key[])
 	cout << "\n\n-------------DECODED TEXT-------------\n";
 	for (int i = 0; i < 8; i++)
 		cout << new_ct[i];
+	return new_ct;
 }
-
-
-int main()
+//// Функция для атаки встречи по середине
+int SDES::meetInTheMiddle(int* ciphertext, int* plaintext)
 {
-	int* round_text=0, * cipher_text, pt[8], key[10];
-	cout << "\nEnter the plain text (8-bits) :";
-	for (int i = 0; i < 8; i++)
-		cin >> pt[i];
-	cout << "\nEnter the key (10-bits) :";
-	for (int i = 0; i < 10; i++)
-		cin >> key[i];
-    SDES S;
-	//int pt[8]={0,1,1,1,0,0,1,0};
-	//int key[10]={1,0,1,0,0,0,0,0,1,0};
-	cout << "\n-------------ENCRYPTION-------------\n";
-	cipher_text = S.encode(pt, round_text, key);		//КОДИРОВАНИЕ
-	cout << "\n\n\n-------------DECRYPTION-------------\n";
-	S.decode(pt, cipher_text, key);					//ДЕКОДИРОВАНИЕ
-	if (S.encode(pt,round_text,key))
+   //Перебираем все возможные значения ключей
+	for (int i = 0; i <= 0xFF; i++)
 	{
-    S.generate_key(key,2);
-	cipher_text = S.encode(pt, round_text, key);		//КОДИРОВАНИЕ C = S-DES(S-DES(M, 𝐾1), 𝐾2)
+		return 0;
+		round1_key[i]; // Перебираемый ключ 1
+		// Зашифровываем открытый текст с использованием ключа 1
+		int* intermediate = encode(round1_key, plaintext,ciphertext);
+
+		// Расшифровываем шифротекст с использованием всех возможных ключей 2
+		for (int j = 0; j <= 0xFF; j++) {
+			round2_key[j]; // Перебираемый ключ 2
+
+			// Проверяем, соответствует ли расшифрованный текст шифротексту
+			if (decode(round2_key, intermediate,plaintext) == ciphertext)
+			{
+				// Найдено совпадение, возвращаем найденный ключ
+				return i;
+			}
+		}
 	}
-	
+	// Если ключ не найден
 	return 0;
 }
 
+int main() 
+{
+    SDES S;
+	int round1_key[0b10101010]; // Известный ключ 1
+	int round2_key[0b01010101]; // Известный ключ 2
+	int plaintext[0b11001100]; // Исходный текст
+	int pt[8];
+	// Шифруем текст с использованием известных ключей
+	int* intermediate = S.encode(pt, plaintext,round1_key);
+	int* ciphertext = S.encode(pt,round2_key, intermediate);
+
+	// Выполняем атаку встречу по середине
+	int recoveredKey = S.meetInTheMiddle(ciphertext, plaintext);
+
+	cout << "Восстановленный ключ: " << recoveredKey << endl;
+
+	return 0;
+}
 
