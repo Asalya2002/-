@@ -410,8 +410,6 @@ int main()
 	// Выполняем атаку встречу по середине
 	int recoveredKey = S.meetInTheMiddle(ciphertext, plaintext);
 
-	cout << "Восстановленный ключ: " << recoveredKey << endl;
-
 	return 0;
 }
 
